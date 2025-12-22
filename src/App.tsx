@@ -69,9 +69,10 @@ function App() {
       <Routes>
         <Route path={ROUTES.LOGIN} element={<LoginPage />} />
         <Route element={<Layout />}>
-          <Route path={ROUTES.HOME} element={<HomePage />} />
+          {/* <Route path={ROUTES.HOME} element={<HomePage />} />
           <Route path={ROUTES.WALLET.LIST} element={<WalletPage />} />
-          <Route path={ROUTES.WALLET.NEW} element={<NewTransactionPage />} />
+          <Route path={ROUTES.WALLET.NEW} element={<NewTransactionPage />} /> */}
+          <Route path={ROUTES.HOME} element={<WalletPage />} />
         </Route>
       </Routes>
       <ConfirmDialog />

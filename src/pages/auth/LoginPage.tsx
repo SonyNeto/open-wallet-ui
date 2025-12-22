@@ -52,6 +52,7 @@ export const LoginPage: FC = () => {
             )}
           >
             <Button disabled={loginGoogleIsPending} className="mt-6" variant="outlined" size="wide">
+              <img src="/google_48.webp" alt="google icon" className="size-4" />
               Continue with Google
             </Button>
           </Link>

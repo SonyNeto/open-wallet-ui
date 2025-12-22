@@ -1,9 +1,4 @@
-import {
-  BanknoteArrowDownIcon,
-  BanknoteArrowUpIcon,
-  CalendarSyncIcon,
-  DiamondPercentIcon,
-} from 'lucide-react';
+import { BanknoteArrowDownIcon, BanknoteArrowUpIcon, DiamondPercentIcon } from 'lucide-react';
 import { useState, type FC } from 'react';
 import { SimpleExpenseDialog } from './components/SimpleExpenseDialog';
 import { IncomeDialog } from './components/IncomeDialog';
@@ -123,10 +118,10 @@ export const NewTransactionPage: FC = () => {
               <span className="text-2xl">Installment</span>
             </button>
           </InstallmentDialog>
-          <button className="flex cursor-pointer flex-col items-center justify-center rounded-md bg-zinc-950 p-12 text-zinc-600 transition-colors hover:bg-purple-400 hover:text-purple-800">
+          {/* <button className="flex cursor-pointer flex-col items-center justify-center rounded-md bg-zinc-950 p-12 text-zinc-600 transition-colors hover:bg-purple-400 hover:text-purple-800">
             <CalendarSyncIcon className="size-16" />
             <span className="text-2xl">Recurring</span>
-          </button>
+          </button> */}
           {/* <button className="flex cursor-pointer flex-col items-center justify-center rounded-md bg-zinc-950 p-12 text-zinc-600 transition-colors hover:bg-blue-400 hover:text-blue-800">
             <WaypointsIcon className="size-16" />
             <span className="text-2xl">Shared</span>
