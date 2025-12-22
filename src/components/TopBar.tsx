@@ -26,7 +26,7 @@ export const TopBar: FC = () => {
       <header className="fixed top-0 flex h-16 w-[calc(100vw-18rem)] items-center justify-end gap-2 px-8">
         <PeriodPickerCustom value={period} onChange={setPeriod} align="center">
           <div className="flex h-10 cursor-pointer items-center justify-center gap-2 rounded-full bg-zinc-950 p-2 text-sm">
-            {`${MONTHS_FULL[period.month]} de ${period.year}`}
+            {`${MONTHS_FULL[period.month]} ${period.year}`}
           </div>
         </PeriodPickerCustom>
         <DropdownMenu>

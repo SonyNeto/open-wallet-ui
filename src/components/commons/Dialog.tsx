@@ -35,7 +35,10 @@ export const DialogTitle: FC<ComponentProps<typeof DialogPrimitive.Title>> = ({
   className,
   ...props
 }) => (
-  <DialogPrimitive.Title className={cn('font-title text-2xl font-bold', className)} {...props} />
+  <DialogPrimitive.Title
+    className={cn('font-title mb-4 text-2xl font-bold', className)}
+    {...props}
+  />
 );
 export const DialogDescription = DialogPrimitive.Description;
 export const DialogClose = DialogPrimitive.Close;

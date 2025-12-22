@@ -1,14 +1,19 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import z from 'zod';
-import { Input } from '../../../components/commons/Input';
+import { Input } from '../../../components/commons/input/Input';
 import { Dialog } from '@radix-ui/react-dialog';
-import { DialogClose, DialogContent, DialogTrigger } from '../../../components/commons/Dialog';
+import {
+  DialogClose,
+  DialogContent,
+  DialogTitle,
+  DialogTrigger,
+} from '../../../components/commons/Dialog';
 import { Button } from '../../../components/commons/Button';
 import { Textarea } from '../../../components/commons/Textarea';
 import dayjs from 'dayjs';
 import type { FCC } from '../../../utils/types';
-import { MoneyInput } from '../../../components/commons/MoneyInput';
+import { MoneyInput } from '../../../components/commons/input/MoneyInput';
 import { formatCurrency } from '../../../utils/functions';
 
 interface Props {
@@ -26,7 +31,7 @@ interface Props {
 
 const initialDefaultValues = {
   name: '',
-  amount: `${formatCurrency(0)}`,
+  amount: formatCurrency(0),
   date: new Date(),
   description: '',
 };
@@ -70,6 +75,7 @@ export const IncomeDialog: FCC<Props> = ({
     <Dialog open={isVisible} onOpenChange={onVisibleChange}>
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent>
+        <DialogTitle>Income</DialogTitle>
         <form className="flex flex-col gap-3" onSubmit={handleSubmit(onSubmit)}>
           <label className="flex flex-col text-sm">
             <span data-error={errors.name?.message || '*'}>Name</span>

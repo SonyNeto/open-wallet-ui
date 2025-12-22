@@ -1,14 +1,14 @@
 import type { ChangeEvent, FC, FocusEvent, InputHTMLAttributes } from 'react';
 import { Input } from './Input';
-import { formatCurrency } from '../../utils/functions';
+import { formatCurrency } from '../../../utils/functions';
 
 interface Props extends InputHTMLAttributes<HTMLInputElement> {
   minValue?: number;
   maxValue?: number;
 }
 
-export const MoneyInput: FC<Props> = ({ minValue, maxValue, onInput, onBlur, ...props }) => {
-  function handleOnInput(event: ChangeEvent<HTMLInputElement>) {
+export const MoneyInput: FC<Props> = ({ minValue, maxValue, onChange, onBlur, ...props }) => {
+  function handleOnChange(event: ChangeEvent<HTMLInputElement>) {
     if ((minValue && minValue < 0) || (maxValue && maxValue < 0)) {
       throw new Error('MoneyInput only supports positive values for minValue and maxValue');
     }
@@ -17,7 +17,7 @@ export const MoneyInput: FC<Props> = ({ minValue, maxValue, onInput, onBlur, ...
     const amount = cents / 100;
     event.target.value = formatCurrency(amount);
 
-    if (onInput) onInput(event);
+    if (onChange) onChange(event);
   }
 
   function handleOnBlur(event: FocusEvent<HTMLInputElement>) {
@@ -35,5 +35,5 @@ export const MoneyInput: FC<Props> = ({ minValue, maxValue, onInput, onBlur, ...
     }
   }
 
-  return <Input {...props} inputMode="numeric" onInput={handleOnInput} onBlur={handleOnBlur} />;
+  return <Input {...props} inputMode="numeric" onChange={handleOnChange} onBlur={handleOnBlur} />;
 };

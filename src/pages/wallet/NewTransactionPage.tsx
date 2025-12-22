@@ -16,10 +16,12 @@ import { ROUTES } from '../../constants/routes';
 import { entriesKeys } from '../../queries/transactions-queries';
 import { parseUSD } from '../../utils/functions';
 import { usePostIncome } from '../../hooks/mutations/usePostIncome';
+import { usePostInstallment } from '../../hooks/mutations/usePostInstallment';
 
 export const NewTransactionPage: FC = () => {
   const [simpleExpenseIsVisible, setSimpleExpenseIsVisible] = useState(false);
   const [incomeIsVisible, setIncomeIsVisible] = useState(false);
+  const [installmentIsVisible, setInstallmentIsVisible] = useState(false);
   const navigate = useNavigate();
 
   const { mutate: postSimpleExpense, isPending: isPostSimpleExpensePending } = usePostSimpleExpense(
@@ -48,12 +50,24 @@ export const NewTransactionPage: FC = () => {
     },
   });
 
+  const { mutate: postInstallment, isPending: isPostInstallmentPending } = usePostInstallment({
+    onSuccess: (data) => {
+      setSimpleExpenseIsVisible(false);
+      navigate(`${ROUTES.WALLET.LIST}?period=${data.data.entries[0].period}`);
+    },
+    meta: {
+      successNotification: 'Transaction created successfully',
+      errorNotification: 'There was an error creating the transaction',
+      invalidateQuery: [...entriesKeys.all()],
+    },
+  });
+
   return (
     <Page>
       <main className="flex w-full flex-col items-center px-8 py-16">
-        <h1 className="font-title text-3xl text-shadow-2xs">Select a transaction type</h1>
+        <h1 className="font-title text-4xl font-bold text-shadow-2xs">Select a transaction type</h1>
 
-        <div className="mt-12 grid w-full grid-cols-3 gap-6">
+        <div className="mt-12 grid w-full grid-cols-4 gap-6">
           <SimpleExpenseDialog
             isVisible={simpleExpenseIsVisible}
             onVisibleChange={setSimpleExpenseIsVisible}
@@ -68,7 +82,7 @@ export const NewTransactionPage: FC = () => {
             isLoading={isPostSimpleExpensePending}
           >
             <button className="flex cursor-pointer flex-col items-center justify-center rounded-md bg-zinc-950 p-12 text-zinc-600 transition-colors hover:bg-red-400 hover:text-red-800">
-              <BanknoteArrowDownIcon className="size-24" />
+              <BanknoteArrowDownIcon className="size-16" />
               <span className="text-2xl">Expense</span>
             </button>
           </SimpleExpenseDialog>
@@ -86,22 +100,35 @@ export const NewTransactionPage: FC = () => {
             isLoading={isPostIncomePending}
           >
             <button className="flex cursor-pointer flex-col items-center justify-center rounded-md bg-zinc-950 p-12 text-zinc-600 transition-colors hover:bg-green-400 hover:text-green-800">
-              <BanknoteArrowUpIcon className="size-24" />
+              <BanknoteArrowUpIcon className="size-16" />
               <span className="text-2xl">Income</span>
             </button>
           </IncomeDialog>
-          <InstallmentDialog onSave={() => {}}>
+          <InstallmentDialog
+            onSave={(data) => {
+              postInstallment({
+                name: data.name,
+                total_amount: parseUSD(data.amount),
+                total_installments: Number(data.installments),
+                period: dayjs().year(data.period.year).month(data.period.month).format('YYYYMM'),
+                description: data.description,
+              });
+            }}
+            isVisible={installmentIsVisible}
+            onVisibleChange={setInstallmentIsVisible}
+            isLoading={isPostInstallmentPending}
+          >
             <button className="flex cursor-pointer flex-col items-center justify-center rounded-md bg-zinc-950 p-12 text-zinc-600 transition-colors hover:bg-orange-400 hover:text-orange-800">
-              <DiamondPercentIcon className="size-24" />
+              <DiamondPercentIcon className="size-16" />
               <span className="text-2xl">Installment</span>
             </button>
           </InstallmentDialog>
           <button className="flex cursor-pointer flex-col items-center justify-center rounded-md bg-zinc-950 p-12 text-zinc-600 transition-colors hover:bg-purple-400 hover:text-purple-800">
-            <CalendarSyncIcon className="size-24" />
+            <CalendarSyncIcon className="size-16" />
             <span className="text-2xl">Recurring</span>
           </button>
           {/* <button className="flex cursor-pointer flex-col items-center justify-center rounded-md bg-zinc-950 p-12 text-zinc-600 transition-colors hover:bg-blue-400 hover:text-blue-800">
-            <WaypointsIcon className="size-24" />
+            <WaypointsIcon className="size-16" />
             <span className="text-2xl">Shared</span>
           </button> */}
         </div>

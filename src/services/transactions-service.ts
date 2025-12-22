@@ -87,4 +87,30 @@ export const TransactionsService = {
 
     return response.data;
   },
+  async postInstallment(payload: {
+    name: string;
+    description?: string | null;
+    total_amount: number;
+    total_installments: number;
+    period: string;
+  }) {
+    const response = await API.post<{
+      data: {
+        entries: {
+          id: string;
+          transaction_id: string;
+          description?: string | null;
+          amount: number;
+          period: string;
+          user_id: string;
+          type: string;
+          total_amount: number;
+          installment: number;
+          total_installments: number;
+        }[];
+      };
+    }>('/v1/transactions/installment', payload);
+
+    return response.data;
+  },
 };
