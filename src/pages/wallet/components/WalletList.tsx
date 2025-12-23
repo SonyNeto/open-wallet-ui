@@ -114,9 +114,9 @@ export const WalletList: FC = () => {
       trClassName: 'w-[10%]',
     },
     {
-      id: 'due_date',
+      id: 'reference_date',
       title: 'Date',
-      render: (d) => dayjs(d.reference_date).format('MMM D, YYYY'),
+      render: (d) => dayjs(d.reference_date.substring(0, 10), 'YYYY-MM-DD').format('MMM D, YYYY'),
       isLoading: <Skeleton variant="text" width={40} height={24} />,
       trClassName: 'w-[20%]',
     },
