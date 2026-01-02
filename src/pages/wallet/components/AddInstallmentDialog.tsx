@@ -14,7 +14,6 @@ import z from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { MoneyInput } from '../../../components/commons/input/MoneyInput';
 import { NumberInput } from '../../../components/commons/input/NumberInput';
-import { useCtx } from '../../../hooks/useCtx';
 import { formatCurrency } from '../../../utils/functions';
 import dayjs from 'dayjs';
 import { AsyncSelectCategory } from '../../../components/AsyncSelectCategory';
@@ -23,13 +22,7 @@ import type { Option } from '../../../components/commons/select/AsyncSelect';
 import { Form } from '../../../components/commons/Form';
 
 interface Props {
-  defaultValues?: {
-    name: string;
-    amount: number;
-    installments: number;
-    date: string;
-    description: string;
-  };
+  defaultValues?: Form;
   onSave: (data: Form) => void;
   isVisible?: boolean;
   onVisibleChange?: (visible: boolean) => void;
@@ -53,25 +46,23 @@ type Form = Omit<z.infer<typeof schema>, 'category'> & {
   > | null;
 };
 
+const initialDefaultValues: Form = {
+  name: '',
+  amount: formatCurrency(0),
+  installments: '2',
+  date: dayjs().format('YYYY-MM-DD'),
+  description: '',
+  category: null,
+};
+
 export const AddInstallmentDialog: FCC<Props> = ({
   children,
-  defaultValues,
+  defaultValues = initialDefaultValues,
   onSave,
   isVisible,
   onVisibleChange,
   isLoading = false,
 }) => {
-  const { period } = useCtx();
-
-  const defaultValuesDefined = {
-    name: defaultValues?.name || '',
-    amount: defaultValues?.amount || 0,
-    installments: defaultValues?.installments || 2,
-    date:
-      defaultValues?.date ||
-      dayjs().year(period.year).month(period.month).date(dayjs().date()).format('YYYY-MM-DD'),
-    description: defaultValues?.description || '',
-  };
   const {
     register,
     handleSubmit,
@@ -80,11 +71,11 @@ export const AddInstallmentDialog: FCC<Props> = ({
     reset,
   } = useForm<Form>({
     defaultValues: {
-      name: defaultValuesDefined.name,
-      amount: formatCurrency(defaultValuesDefined.amount),
-      installments: defaultValuesDefined.installments.toString(),
-      date: defaultValuesDefined.date,
-      description: defaultValuesDefined.description,
+      name: defaultValues.name,
+      amount: defaultValues.amount,
+      installments: defaultValues.installments.toString(),
+      date: defaultValues.date,
+      description: defaultValues.description,
       category: null,
     },
     resolver: zodResolver(schema),

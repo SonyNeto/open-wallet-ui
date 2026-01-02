@@ -31,10 +31,10 @@ interface Props {
   isLoading?: boolean;
 }
 
-const initialDefaultValues = {
+const initialDefaultValues: Form = {
   name: '',
   amount: formatCurrency(0),
-  date: new Date(),
+  date: dayjs().format('YYYY-MM-DD'),
   description: '',
 };
 
