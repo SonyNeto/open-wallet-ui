@@ -17,7 +17,6 @@ import { SaveIncomeDialog } from './SaveIncomeDialog';
 import { SaveSimpleExpenseDialog } from './SaveSimpleExpenseDialog';
 import { usePatchSimpleExpense } from '../../../hooks/mutations/usePatchSimpleExpense';
 import { usePatchIncome } from '../../../hooks/mutations/usePatchIncome';
-
 export const EntriesList: FC = () => {
   const [isDeleting, setIsDeleting] = useState<string>('');
   const [isEditingExpense, setIsEditingExpense] = useState<{

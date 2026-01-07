@@ -13,10 +13,10 @@ import { toast, Toaster } from 'sonner';
 import { useEffect } from 'react';
 import { useSession } from './hooks/useSession';
 import { ConfirmDialog } from './components/commons/ConfirmDialog';
-import { HomePage } from './pages/HomePage';
 import { NewTransactionPage } from './pages/wallet/NewTransactionPage';
 import { CategoriesPage } from './pages/categories/CategoriesPage';
 import * as PrimitiveTooltip from '@radix-ui/react-tooltip';
+import { DashboardPage } from './pages/dashboard/DashboardPage';
 
 declare module '@tanstack/react-query' {
   interface Register {
@@ -72,7 +72,7 @@ function App() {
         <Routes>
           <Route path={ROUTES.LOGIN} element={<LoginPage />} />
           <Route element={<Layout />}>
-            <Route path={ROUTES.HOME} element={<HomePage />} />
+            <Route path={ROUTES.HOME} element={<DashboardPage />} />
             <Route path={ROUTES.WALLET.LIST} element={<WalletPage />} />
             <Route path={ROUTES.WALLET.NEW} element={<NewTransactionPage />} />
             <Route path={ROUTES.HOME} element={<WalletPage />} />
