@@ -18,6 +18,6 @@ export function getCategoriesQueryOpts(queryOpts?: QueryOpts) {
 export function getCategoriesPerPeriodQueryOpts(period: string, queryOpts?: QueryOpts) {
   return {
     queryKey: categoriesKeys.getCategoriesPerPeriod(period, queryOpts),
-    queryFn: () => CategoriesService.getCategoriesPerPeriod(period),
+    queryFn: () => CategoriesService.getCategoriesPerPeriod(period, queryOpts),
   };
 }

@@ -4,6 +4,8 @@ import { useSuspenseQuery } from '@tanstack/react-query';
 import { getCategoriesPerPeriodQueryOpts } from '../../../queries/categories-queries';
 import { usePeriod } from '../../../hooks/usePeriod';
 import dayjs from 'dayjs';
+import { createFilter } from '../../../utils/filter';
+import { ChartPieIcon } from 'lucide-react';
 
 export const CategoryPerPeriod: FC = () => {
   const { period } = usePeriod();
@@ -11,12 +13,27 @@ export const CategoryPerPeriod: FC = () => {
   const { data } = useSuspenseQuery({
     ...getCategoriesPerPeriodQueryOpts(
       dayjs().month(period.month).year(period.year).format('YYYYMM'),
+      {
+        filter: createFilter().and('total_amount', 'lt', 0).toURL(),
+      },
     ),
   });
 
   const option = {
     tooltip: {
       trigger: 'item',
+      formatter: function (params: { value: number; name: string; percent: string }) {
+        return (
+          params.name +
+          '<br/>' +
+          Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(
+            params.value * -1,
+          ) +
+          ' (' +
+          params.percent +
+          '%)'
+        );
+      },
     },
     legend: {
       top: '5%',
@@ -24,7 +41,6 @@ export const CategoryPerPeriod: FC = () => {
     },
     series: [
       {
-        name: 'Access From',
         type: 'pie',
         radius: ['40%', '70%'],
         avoidLabelOverlap: false,
@@ -48,12 +64,33 @@ export const CategoryPerPeriod: FC = () => {
           show: false,
         },
         data: data.data.categories.map((category) => ({
-          value: category.total_amount,
+          value: Math.abs(category.total_amount),
           name: category.name,
+          itemStyle: {
+            color: category.color,
+          },
+          label: {
+            formatter: (params: { value: number }) =>
+              Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(
+                params.value * -1,
+              ),
+          },
         })),
       },
     ],
   };
+
+  if (data.data.categories.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center">
+        <div className="bg-primary/20 rounded-full p-4">
+          <ChartPieIcon className="text-primary size-10" />
+        </div>
+        <span className="text-lg font-medium">No transactions with categories yet</span>
+        <span>Categorize your transactions to check some insights</span>
+      </div>
+    );
+  }
 
   return <ReactECharts option={option} />;
 };
