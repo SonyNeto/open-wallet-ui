@@ -70,58 +70,66 @@ export const CategoriesPerPeriodList = () => {
       header={<h2 className="text-muted-foreground">Categories</h2>}
     >
       <div className="flex w-full max-w-4xl flex-col gap-2">
-        {categories.map((category) => (
-          <div className="flex w-full justify-between" key={`category-${category.id}`}>
-            <div className="flex items-center gap-2">
-              <div
-                className="size-5 rounded-full shadow-sm"
-                style={{ backgroundColor: category.color }}
-              />
-              <p>{category.name}</p>
-            </div>
+        {categories.length > 0 ? (
+          categories.map((category) => (
+            <div className="flex w-full justify-between" key={`category-${category.id}`}>
+              <div className="flex items-center gap-2">
+                <div
+                  className="size-5 rounded-full shadow-sm"
+                  style={{ backgroundColor: category.color }}
+                />
+                <p>{category.name}</p>
+              </div>
 
-            <div className="flex items-center gap-2">
-              <span
-                className={cn(
-                  'font-medium',
-                  category.total_amount >= 0 ? 'text-green-500' : 'text-red-400',
-                )}
-              >
-                {Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(
-                  category.total_amount,
-                )}
-              </span>
-              <Button
-                size="sm"
-                variant="outlined"
-                onClick={() => {
-                  setIsEditing({
-                    id: category.id,
-                    defaultValues: {
-                      name: category.name,
-                      color: category.color,
-                    },
-                  });
-                }}
-              >
-                <SquarePenIcon className="size-4" />
-              </Button>
-              <Button
-                size="sm"
-                variant="outlined"
-                onClick={() =>
-                  confirm.add(
-                    'Delete Category',
-                    'This action will delete this category and let entries associated to it orphaned.',
-                    () => deleteCategory(category.id),
-                  )
-                }
-              >
-                <TrashIcon className="size-4" />
-              </Button>
+              <div className="flex items-center gap-2">
+                <span
+                  className={cn(
+                    'font-medium',
+                    category.total_amount >= 0 ? 'text-green-500' : 'text-red-400',
+                  )}
+                >
+                  {Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(
+                    category.total_amount,
+                  )}
+                </span>
+                <Button
+                  size="sm"
+                  variant="outlined"
+                  onClick={() => {
+                    setIsEditing({
+                      id: category.id,
+                      defaultValues: {
+                        name: category.name,
+                        color: category.color,
+                      },
+                    });
+                  }}
+                >
+                  <SquarePenIcon className="size-4" />
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outlined"
+                  onClick={() =>
+                    confirm.add(
+                      'Delete Category',
+                      'This action will delete this category and let entries associated to it orphaned.',
+                      () => deleteCategory(category.id),
+                    )
+                  }
+                >
+                  <TrashIcon className="size-4" />
+                </Button>
+              </div>
             </div>
+          ))
+        ) : (
+          <div className="flex flex-col items-center justify-center">
+            <img src="/empty_state_tag.webp" alt="" className="size-20" />
+            <span className="mt-3 text-lg font-medium">No transactions with categories yet</span>
+            <span>Categorize your transactions to check some insights</span>
           </div>
-        ))}
+        )}
       </div>
       {isEditing && (
         <SaveCategoryDialog

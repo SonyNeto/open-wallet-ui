@@ -286,7 +286,7 @@ export const EntriesList: FC = () => {
         </table>
       ) : (
         <div className="flex flex-col items-center justify-center pb-8">
-          <img src="/no_data.webp" alt="no results found" className="size-64" />
+          <img src="/empty_state_wallet.webp" alt="no results found" className="size-28" />
 
           <span className="text-lg font-medium">No transactions yet</span>
           <span>Try adding one</span>
