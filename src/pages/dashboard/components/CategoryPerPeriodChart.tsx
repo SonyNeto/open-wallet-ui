@@ -5,7 +5,6 @@ import { getCategoriesPerPeriodQueryOpts } from '../../../queries/categories-que
 import { usePeriod } from '../../../hooks/usePeriod';
 import dayjs from 'dayjs';
 import { createFilter } from '../../../utils/filter';
-import { ChartPieIcon } from 'lucide-react';
 
 export const CategoryPerPeriod: FC = () => {
   const { period } = usePeriod();
@@ -83,9 +82,7 @@ export const CategoryPerPeriod: FC = () => {
   if (data.data.categories.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center">
-        <div className="bg-primary/20 rounded-full p-4">
-          <ChartPieIcon className="text-primary size-10" />
-        </div>
+        <img src="/empty_state_donut.webp" alt="" className="size-24" />
         <span className="text-lg font-medium">No transactions with categories yet</span>
         <span>Categorize your transactions to check some insights</span>
       </div>

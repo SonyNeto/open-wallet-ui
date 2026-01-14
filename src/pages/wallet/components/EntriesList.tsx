@@ -1,5 +1,5 @@
 import { useState, type ComponentProps, type FC } from 'react';
-import { useSuspenseQuery } from '@tanstack/react-query';
+import { useQueryClient, useSuspenseQuery } from '@tanstack/react-query';
 import { entriesKeys, getEntriesQueryOpts } from '../../../queries/transactions-queries';
 import dayjs from 'dayjs';
 import type { TransactionsService } from '../../../services/TransactionsService';
@@ -36,6 +36,7 @@ export const EntriesList: FC = () => {
   } | null>(null); */
   const { period } = usePeriod();
   const confirm = useConfirm();
+  const queryClient = useQueryClient();
 
   const { mutate: patchSimpleExpense, isPending: isSimpleExpensePending } = usePatchSimpleExpense({
     onSuccess: () => {
@@ -63,7 +64,7 @@ export const EntriesList: FC = () => {
     ...getEntriesQueryOpts(dayjs().year(period.year).month(period.month).format('YYYYMM'), {
       per_page: 999,
       order_by: 'reference_date',
-      order: 'asc',
+      order: 'desc',
     }),
     select: (data) => {
       const entriesPerDate: Record<
@@ -83,14 +84,57 @@ export const EntriesList: FC = () => {
   });
 
   const { mutate: deleteTransaction } = useDeleteTransaction({
-    onMutate: (id) => {
+    onMutate: async (id) => {
       setIsDeleting(id);
+
+      const periodKey = dayjs().year(period.year).month(period.month).format('YYYYMM');
+      const queryOpts = {
+        per_page: 999,
+        order_by: 'reference_date' as const,
+        order: 'desc' as const,
+      };
+
+      const queryKey = entriesKeys.getEntries(periodKey, queryOpts);
+
+      await queryClient.cancelQueries({ queryKey: entriesKeys.all() });
+
+      const previousData = queryClient.getQueryData(queryKey);
+
+      queryClient.setQueryData<Awaited<ReturnType<typeof TransactionsService.getEntries>>>(
+        queryKey,
+        (old) => {
+          if (!old) return old;
+          return {
+            ...old,
+            data: {
+              ...old.data,
+              entries: old.data.entries.filter((entry) => entry.transaction_id !== id),
+            },
+          };
+        },
+      );
+
+      return {
+        previousData,
+        queryKey,
+      };
     },
-    onSettled: () => {
+    onError: (_err, _id, context) => {
+      const ctx = context as
+        | {
+            previousData?: Awaited<ReturnType<typeof TransactionsService.getEntries>>;
+            queryKey?: readonly unknown[];
+          }
+        | undefined;
+      if (ctx?.previousData && ctx?.queryKey) {
+        queryClient.setQueryData(ctx.queryKey, ctx.previousData);
+      }
+      setIsDeleting('');
+    },
+    onSuccess: () => {
       setIsDeleting('');
     },
     meta: {
-      successNotification: 'Transaction deleted successfully',
       errorNotification: 'An error occurred while deleting the transaction',
       invalidateQuery: [entriesKeys.all()],
     },
@@ -286,7 +330,7 @@ export const EntriesList: FC = () => {
         </table>
       ) : (
         <div className="flex flex-col items-center justify-center pb-8">
-          <img src="/no_data.webp" alt="no results found" className="size-64" />
+          <img src="/empty_state_wallet.webp" alt="no results found" className="size-28" />
 
           <span className="text-lg font-medium">No transactions yet</span>
           <span>Try adding one</span>

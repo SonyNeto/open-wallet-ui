@@ -9,7 +9,7 @@ export const entriesKeys = {
 
 export function getEntriesQueryOpts(period: string, queryOpts?: QueryOpts) {
   return {
-    queryKey: [...entriesKeys.getEntries(period), queryOpts],
+    queryKey: [...entriesKeys.getEntries(period, queryOpts)],
     queryFn: () => TransactionsService.getEntries(period, queryOpts),
   };
 }

@@ -8,6 +8,7 @@ import { MONTHS_FULL } from '../../constants/dates';
 import { EntriesList } from './components/EntriesList';
 import { usePeriod } from '../../hooks/usePeriod';
 import { Zelda } from '../../components/commons/Zelda';
+import { LoaderWords } from '../../components/commons/loader/LoaderWords';
 
 export const WalletPage: FC = () => {
   const { period, setPeriod } = usePeriod();
@@ -33,7 +34,15 @@ export const WalletPage: FC = () => {
           </div>
         </header>
 
-        <Suspense fallback={<div>Loading...</div>}>
+        <Suspense
+          fallback={
+            <div className="flex h-[calc(100vh-10rem)] items-center justify-center">
+              <LoaderWords
+                words={['sums', 'expenses', 'incomes', 'installments', 'transactions']}
+              />
+            </div>
+          }
+        >
           <EntriesList />
         </Suspense>
       </main>
