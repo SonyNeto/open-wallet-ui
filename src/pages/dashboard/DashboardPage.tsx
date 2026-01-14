@@ -1,10 +1,11 @@
-import type { FC } from 'react';
+import { Suspense, type FC } from 'react';
 import { Page } from '../../components/commons/Page';
 import { Graphs } from './components/Graphs';
 import { PeriodPickerCustom } from '../../components/commons/PeriodPickerCustom';
 import { Button } from '../../components/commons/Button';
 import { MONTHS_FULL } from '../../constants/dates';
 import { usePeriod } from '../../hooks/usePeriod';
+import { LoaderWords } from '../../components/commons/loader/LoaderWords';
 
 export const DashboardPage: FC = () => {
   const { period, setPeriod } = usePeriod();
@@ -24,7 +25,15 @@ export const DashboardPage: FC = () => {
           </div>
         </header>
 
-        <Graphs />
+        <Suspense
+          fallback={
+            <div className="flex h-[calc(100vh-10rem)] items-center justify-center">
+              <LoaderWords words={['insights', 'spending', 'analysis', 'review', 'graphs']} />
+            </div>
+          }
+        >
+          <Graphs />
+        </Suspense>
       </main>
     </Page>
   );

@@ -8,6 +8,7 @@ import { usePeriod } from '../../hooks/usePeriod';
 import { SaveCategoryDialog } from './components/SaveCategoryDialog';
 import { usePostCategory } from '../../hooks/mutations/usePostCategory';
 import { categoriesKeys } from '../../queries/categories-queries';
+import { LoaderWords } from '../../components/commons/loader/LoaderWords';
 
 export const CategoriesPage: FC = () => {
   const [addCategoryVisible, setAddCategoryVisible] = useState(false);
@@ -46,7 +47,13 @@ export const CategoriesPage: FC = () => {
           </div>
         </header>
 
-        <Suspense fallback={<div>Loading...</div>}>
+        <Suspense
+          fallback={
+            <div className="flex h-[calc(100vh-10rem)] items-center justify-center">
+              <LoaderWords words={['sums', 'categories', 'spent per month', 'colors', 'labels']} />
+            </div>
+          }
+        >
           <CategoriesPerPeriodList />
         </Suspense>
       </main>
