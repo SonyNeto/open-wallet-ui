@@ -3,13 +3,12 @@ import type { QueryOpts } from '../utils/types';
 
 export const entriesKeys = {
   all: () => ['entries'] as const,
-  getEntries: (period: string, queryOpts?: QueryOpts) =>
-    [...entriesKeys.all(), { period }, { queryOpts }] as const,
+  getEntries: (queryOpts?: QueryOpts) => [...entriesKeys.all(), { queryOpts }] as const,
 };
 
-export function getEntriesQueryOpts(period: string, queryOpts?: QueryOpts) {
+export function getEntriesQueryOpts(queryOpts?: QueryOpts) {
   return {
-    queryKey: [...entriesKeys.getEntries(period, queryOpts)],
-    queryFn: () => TransactionsService.getEntries(period, queryOpts),
+    queryKey: [...entriesKeys.getEntries(queryOpts)],
+    queryFn: () => TransactionsService.getEntries(queryOpts),
   };
 }

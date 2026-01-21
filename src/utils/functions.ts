@@ -44,3 +44,7 @@ export function formatCurrency(amount: number): string {
 export function parseUSD(value: string) {
   return Number(value.replace(/,/g, ''));
 }
+
+export function getDefinedKeys(obj: Record<string, unknown>): string[] {
+  return Object.keys(obj).filter((key) => obj[key] !== undefined);
+}

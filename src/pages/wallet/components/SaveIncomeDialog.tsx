@@ -18,6 +18,7 @@ import { MoneyInput } from '../../../components/commons/input/MoneyInput';
 import { formatCurrency } from '../../../utils/functions';
 import { Form } from '../../../components/commons/Form';
 import { AsyncSelectCategory } from '../../../components/AsyncSelectCategory';
+import { Spinner } from '../../../components/commons/loader/Spinner';
 
 interface Props {
   defaultValues?: Form;
@@ -110,7 +111,9 @@ export const SaveIncomeDialog: FCC<Props> = ({
                 Cancel
               </Button>
             </DialogClose>
-            <Button className="w-full">{isLoading ? 'Saving...' : 'Save'}</Button>
+            <Button className="w-full" disabled={isLoading}>
+              {isLoading ? <Spinner variant="secondary" /> : 'Save'}
+            </Button>
           </div>
         </Form>
       </DialogContent>

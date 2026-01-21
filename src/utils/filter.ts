@@ -22,8 +22,8 @@ export function createFilter() {
   const orGroups: Condition[][] = [];
 
   const filterApi = {
-    and(field: string, operator: Operator, value: string | number) {
-      and.push({ field, operator, value: String(value) });
+    and(field: string, operator: Operator, value?: string | number | null) {
+      and.push({ field, operator, value: getValue(value) });
       return filterApi;
     },
 

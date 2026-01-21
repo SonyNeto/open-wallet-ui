@@ -15,10 +15,10 @@ import { usePeriod } from '../../../hooks/usePeriod';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../../../components/commons/Tooltip';
 import { SaveIncomeDialog } from './SaveIncomeDialog';
 import { SaveSimpleExpenseDialog } from './SaveSimpleExpenseDialog';
-import { usePatchSimpleExpense } from '../../../hooks/mutations/usePatchSimpleExpense';
-import { usePatchIncome } from '../../../hooks/mutations/usePatchIncome';
+import { createFilter } from '../../../utils/filter';
+import { SaveInstallmentDialog } from './SaveInstallmentDialog';
+import { usePatchTransaction } from '../../../hooks/mutations/usePatchTransaction';
 export const EntriesList: FC = () => {
-  const [isDeleting, setIsDeleting] = useState<string>('');
   const [isEditingExpense, setIsEditingExpense] = useState<{
     id: string;
     defaultValues: NonNullable<ComponentProps<typeof SaveSimpleExpenseDialog>['defaultValues']>;
@@ -27,32 +27,23 @@ export const EntriesList: FC = () => {
     id: string;
     defaultValues: NonNullable<ComponentProps<typeof SaveIncomeDialog>['defaultValues']>;
   } | null>(null);
-  /* const [isEditingInstallment, setIsEditingInstallment] = useState<{
+  const [isEditingInstallment, setIsEditingInstallment] = useState<{
     transaction_id: string;
-    entry_id: string;
-    scope: (typeof INSTANCE)[keyof typeof INSTANCE];
-    step: number;
-    defaultValues: NonNullable<ComponentProps<typeof EditInstallmentDialog>['defaultValues']>;
-  } | null>(null); */
+    defaultValues?: NonNullable<ComponentProps<typeof SaveInstallmentDialog>['defaultValues']>;
+    previewDefaultValues?: NonNullable<
+      ComponentProps<typeof SaveInstallmentDialog>['previewDefaultValues']
+    >;
+  } | null>(null);
   const { period } = usePeriod();
   const confirm = useConfirm();
   const queryClient = useQueryClient();
+  const periodFormatted = dayjs().year(period.year).month(period.month).format('YYYYMM');
 
-  const { mutate: patchSimpleExpense, isPending: isSimpleExpensePending } = usePatchSimpleExpense({
-    onSuccess: () => {
-      setIsEditingExpense(null);
-    },
-    meta: {
-      successNotification: 'Transaction updated successfully',
-      errorNotification: 'There was an error updating the transaction',
-      invalidateQuery: [entriesKeys.all()],
-    },
-  });
-
-  const { mutate: patchIncome, isPending: isIncomePending } = usePatchIncome({
-    onSuccess: () => {
-      setIsEditingIncome(null);
-    },
+  const {
+    mutate: patchTransaction,
+    isPending: isPatchTransactionLoading,
+    variables: patchTransactionVariables,
+  } = usePatchTransaction({
     meta: {
       successNotification: 'Transaction updated successfully',
       errorNotification: 'There was an error updating the transaction',
@@ -61,10 +52,10 @@ export const EntriesList: FC = () => {
   });
 
   const { data } = useSuspenseQuery({
-    ...getEntriesQueryOpts(dayjs().year(period.year).month(period.month).format('YYYYMM'), {
+    ...getEntriesQueryOpts({
       per_page: 999,
-      order_by: 'reference_date',
-      order: 'desc',
+      order_by: 'reference_date:desc,created_at:desc',
+      filter: createFilter().and('period', 'eq', periodFormatted).toURL(),
     }),
     select: (data) => {
       const entriesPerDate: Record<
@@ -85,16 +76,13 @@ export const EntriesList: FC = () => {
 
   const { mutate: deleteTransaction } = useDeleteTransaction({
     onMutate: async (id) => {
-      setIsDeleting(id);
-
-      const periodKey = dayjs().year(period.year).month(period.month).format('YYYYMM');
       const queryOpts = {
         per_page: 999,
-        order_by: 'reference_date' as const,
-        order: 'desc' as const,
+        order_by: 'reference_date:desc,created_at:desc',
+        filter: createFilter().and('period', 'eq', periodFormatted).toURL(),
       };
 
-      const queryKey = entriesKeys.getEntries(periodKey, queryOpts);
+      const queryKey = entriesKeys.getEntries(queryOpts);
 
       await queryClient.cancelQueries({ queryKey: entriesKeys.all() });
 
@@ -129,27 +117,12 @@ export const EntriesList: FC = () => {
       if (ctx?.previousData && ctx?.queryKey) {
         queryClient.setQueryData(ctx.queryKey, ctx.previousData);
       }
-      setIsDeleting('');
-    },
-    onSuccess: () => {
-      setIsDeleting('');
     },
     meta: {
       errorNotification: 'An error occurred while deleting the transaction',
       invalidateQuery: [entriesKeys.all()],
     },
   });
-
-  /* const { mutate: patchInstallment } = usePatchInstallment({
-    onSettled: () => {
-      setIsEditingInstallment(null);
-    },
-    meta: {
-      successNotification: 'Transaction updated successfully',
-      errorNotification: 'There was an error updating the transaction',
-      invalidateQuery: [entriesKeys.all()],
-    },
-  }); */
 
   const entries = Object.entries(data);
 
@@ -166,12 +139,7 @@ export const EntriesList: FC = () => {
                   </td>
                 </tr>,
                 ...entries.map((entry) => (
-                  <tr
-                    className={cn(
-                      isDeleting === entry.transaction_id && 'pointer-events-none opacity-30',
-                    )}
-                    key={entry.id}
-                  >
+                  <tr key={entry.id}>
                     <td className="w-[30%] px-3 py-1">
                       <div className="flex items-center gap-2">
                         {entry.category_color && (
@@ -209,8 +177,6 @@ export const EntriesList: FC = () => {
                     <td className="w-[5%] px-3 py-1 text-right">
                       <div className="flex items-center gap-2">
                         <Button
-                          title="Not available for installments"
-                          disabled={entry.type === 'installment'}
                           size="sm"
                           variant="outlined"
                           onClick={() => {
@@ -270,13 +236,14 @@ export const EntriesList: FC = () => {
                                 break;
                               }
                               case 'installment': {
-                                /* const defaultValues = {
+                                const defaultValues = {
+                                  amount: formatCurrency(Math.abs(entry.total_amount)),
                                   name: entry.name,
-                                  amount: formatCurrency(Math.abs(entry.amount)),
-                                  description: entry.description || '',
+                                  note: entry.description || '',
+                                  installments: entry.total_installments.toString(),
+                                  reference_date: entry.reference_date,
                                   category: null,
                                 };
-
                                 if (entry.category_id) {
                                   Object.assign(defaultValues, {
                                     category: {
@@ -290,14 +257,10 @@ export const EntriesList: FC = () => {
                                     },
                                   });
                                 }
-
                                 setIsEditingInstallment({
                                   transaction_id: entry.transaction_id,
-                                  entry_id: entry.id,
-                                  scope: INSTANCE.THIS_ONE,
-                                  step: 0,
                                   defaultValues,
-                                }); */
+                                });
                                 break;
                               }
                               default:
@@ -342,70 +305,111 @@ export const EntriesList: FC = () => {
       )}
       {isEditingExpense && (
         <SaveSimpleExpenseDialog
-          isLoading={isSimpleExpensePending}
+          isLoading={
+            isPatchTransactionLoading &&
+            isEditingExpense.id === patchTransactionVariables.transactionId
+          }
           isVisible={!!isEditingExpense}
           onClose={() => setIsEditingExpense(null)}
           defaultValues={isEditingExpense?.defaultValues}
           onSave={(data) => {
-            patchSimpleExpense({
-              id: isEditingExpense.id,
-              payload: {
-                name: data.name,
-                description: data.description,
-                amount: parseUSD(data.amount),
-                reference_date: data.date,
-                category_id: data.category?.id,
+            patchTransaction(
+              {
+                transactionId: isEditingExpense.id,
+                payload: {
+                  name: data.name,
+                  note: data.description,
+                  entries: [
+                    { amount: Math.abs(parseUSD(data.amount)) * -1, reference_date: data.date },
+                  ],
+                  category_id: data.category?.id,
+                },
               },
-            });
+              {
+                onSuccess: () => {
+                  setIsEditingExpense(null);
+                },
+              },
+            );
           }}
         />
       )}
       {isEditingIncome && (
         <SaveIncomeDialog
-          isLoading={isIncomePending}
+          isLoading={
+            isPatchTransactionLoading &&
+            isEditingIncome.id === patchTransactionVariables.transactionId
+          }
           isVisible={!!isEditingIncome}
           onClose={() => setIsEditingIncome(null)}
           defaultValues={isEditingIncome?.defaultValues}
           onSave={(data) => {
-            patchIncome({
-              id: isEditingIncome.id,
-              payload: {
-                name: data.name,
-                description: data.description,
-                amount: parseUSD(data.amount),
-                reference_date: data.date,
-                category_id: data.category?.id,
+            patchTransaction(
+              {
+                transactionId: isEditingIncome.id,
+                payload: {
+                  name: data.name,
+                  note: data.description,
+                  entries: [
+                    { amount: Math.abs(parseUSD(data.amount)) * -1, reference_date: data.date },
+                  ],
+                  category_id: data.category?.id,
+                },
               },
-            });
+              {
+                onSuccess: () => {
+                  setIsEditingIncome(null);
+                },
+              },
+            );
           }}
         />
       )}
-      {/* isEditingInstallment && isEditingInstallment.step === 0 && (
-        <InstanceSelectDialog
-          isVisible={isEditingInstallment && isEditingInstallment.step === 0}
+      {isEditingInstallment && (
+        <SaveInstallmentDialog
+          isLoading={
+            isPatchTransactionLoading &&
+            isEditingInstallment.transaction_id === patchTransactionVariables.transactionId
+          }
+          isVisible={!!isEditingInstallment}
           onClose={() => setIsEditingInstallment(null)}
-          title="Edit Installment"
-          onChange={(scope) => {
-            setIsEditingInstallment((prev) => {
-              if (!prev) return null;
-              return {
-                ...prev,
-                scope,
-              };
-            });
+          onSave={(data) => {
+            patchTransaction(
+              {
+                transactionId: isEditingInstallment.transaction_id,
+                payload: {
+                  category_id: data.category?.id,
+                  entries: data.entries.map((entry) => ({
+                    amount: Math.abs(parseUSD(entry.amount)) * -1,
+                    reference_date: entry.reference_date,
+                  })),
+                  name: data.name,
+                  note: data.note,
+                },
+              },
+              {
+                onSuccess: () => {
+                  setIsEditingInstallment(null);
+                },
+              },
+            );
           }}
-          onConfirm={() => {
-            setIsEditingInstallment((prev) => {
-              if (!prev) return null;
-              return {
-                ...prev,
-                step: 1,
-              };
-            });
+          defaultValues={(() => {
+            if (!isEditingInstallment?.defaultValues) return undefined;
+            return {
+              amount: isEditingInstallment.defaultValues.amount,
+              name: isEditingInstallment.defaultValues.name,
+              note: isEditingInstallment.defaultValues.note,
+              installments: isEditingInstallment.defaultValues.installments,
+              reference_date: isEditingInstallment.defaultValues.reference_date,
+              category: isEditingInstallment.defaultValues.category,
+            };
+          })()}
+          previewDefaultValues={{
+            entries: [],
           }}
-          value={isEditingInstallment?.scope}
         />
-      ) */}
+      )}
     </Card>
   );
 };
