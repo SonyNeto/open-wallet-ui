@@ -2,16 +2,16 @@ import { useMutation } from '@tanstack/react-query';
 import type { MutationOpts } from '../../utils/types';
 import { TransactionsService } from '../../services/TransactionsService';
 
-export function usePatchInstallment({
+export function usePatchTransaction({
   mutationKey = [],
   ...props
 }: MutationOpts<
-  Awaited<ReturnType<typeof TransactionsService.patchInstallment>>,
-  Parameters<typeof TransactionsService.patchInstallment>[0]
+  Awaited<ReturnType<typeof TransactionsService.patchTransaction>>,
+  Parameters<typeof TransactionsService.patchTransaction>[0]
 > = {}) {
   return useMutation({
     ...props,
-    mutationKey: ['PATCH_INSTALLMENT_MUTATION', ...mutationKey],
-    mutationFn: TransactionsService.patchInstallment,
+    mutationKey: ['PATCH_TRANSACTION_MUTATION', ...mutationKey],
+    mutationFn: TransactionsService.patchTransaction,
   });
 }

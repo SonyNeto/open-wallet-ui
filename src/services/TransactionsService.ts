@@ -1,8 +1,9 @@
 import { client } from './client';
 import type { QueryOpts } from '../utils/types';
+import { getDefinedKeys } from '../utils/functions';
 
 export const TransactionsService = {
-  async getEntries(period: string, queryOpts?: QueryOpts) {
+  async getEntries(queryOpts?: QueryOpts) {
     const response = await client.get<{
       data: {
         entries: {
@@ -31,223 +32,63 @@ export const TransactionsService = {
         total_pages: number;
         total_items: number;
       };
-    }>(`/v1/transactions/entries/${period}`, {
+    }>(`/v1/transactions/entries`, {
       params: queryOpts,
     });
-
-    return response.data;
-  },
-  async postSimpleExpense(payload: {
-    name: string;
-    amount: number;
-    reference_date: string;
-    description?: string | null;
-    category_id?: string | null;
-  }) {
-    const response = await client.post<{
-      data: {
-        entry: {
-          id: string;
-          transaction_id: string;
-          name: string;
-          description?: string | null;
-          amount: number;
-          period: string;
-          user_id: string;
-          type: string;
-          total_amount: number;
-          installment: number;
-          total_installments: number;
-          created_at: string;
-          reference_date: string;
-          category_id?: string | null;
-          category_name?: string | null;
-          category_color?: string | null;
-        };
-      };
-    }>('/v1/transactions/simple-expense', payload);
 
     return response.data;
   },
   async deleteTransaction(id: string) {
     await client.delete(`/v1/transactions/${id}`);
   },
-
-  async postIncome(payload: {
-    name: string;
-    amount: number;
-    reference_date: string;
-    description?: string | null;
+  async postTransaction(payload: {
     category_id?: string | null;
+    entries: { amount: number; reference_date: string }[];
+    name: string;
+    note?: string | null;
+    type: string;
   }) {
     const response = await client.post<{
       data: {
-        entry: {
-          id: string;
-          transaction_id: string;
-          name: string;
-          description?: string | null;
-          amount: number;
-          period: string;
-          user_id: string;
-          type: string;
-          total_amount: number;
-          installment: number;
-          total_installments: number;
-          created_at: string;
-          reference_date: string;
+        transaction: {
           category_id?: string | null;
-          category_name?: string | null;
-          category_color?: string | null;
+          created_at: string;
+          description?: string | null;
+          id: string;
+          name: string;
+          type: string;
+          user_id: string;
         };
       };
-    }>('/v1/transactions/income', payload);
+    }>('/v1/transactions', payload);
 
     return response.data;
   },
-  async postInstallment(payload: {
-    name: string;
-    description?: string | null;
-    total_amount: number;
-    total_installments: number;
-    reference_date: string;
-    category_id?: string | null;
+  async patchTransaction(params: {
+    transactionId: string;
+    payload: {
+      category_id?: string | null;
+      name?: string;
+      note?: string | null;
+      entries?: { amount: number; reference_date: string }[];
+    };
   }) {
-    const response = await client.post<{
+    const response = await client.patch<{
       data: {
-        entries: {
-          id: string;
-          transaction_id: string;
-          name: string;
+        transaction: {
+          category_id?: string | null;
+          created_at: string;
           description?: string | null;
-          amount: number;
-          period: string;
-          user_id: string;
-          type: string;
-          total_amount: number;
-          installment: number;
-          total_installments: number;
-          created_at: string;
-          reference_date: string;
-          category_id?: string | null;
-          category_name?: string | null;
-          category_color?: string | null;
-        }[];
-      };
-    }>('/v1/transactions/installment', payload);
-
-    return response.data;
-  },
-  async patchSimpleExpense({
-    id,
-    payload,
-  }: {
-    id: string;
-    payload: {
-      name?: string;
-      description?: string;
-      amount?: number;
-      reference_date?: string;
-      category_id?: string;
-    };
-  }) {
-    const response = await client.patch<{
-      id: string;
-      transaction_id: string;
-      name: string;
-      description: string | null;
-      amount: number;
-      period: string;
-      user_id: string;
-      type: string;
-      total_amount: number;
-      installment: number;
-      total_installments: number;
-      created_at: string;
-      reference_date: string;
-      category_id?: string | null;
-      category_name?: string | null;
-      category_color?: string | null;
-    }>(`/v1/transactions/simple-expense/${id}`, payload);
-
-    return response.data;
-  },
-
-  async patchIncome({
-    id,
-    payload,
-  }: {
-    id: string;
-    payload: {
-      name?: string;
-      description?: string;
-      amount?: number;
-      reference_date?: string;
-      category_id?: string;
-    };
-  }) {
-    const response = await client.patch<{
-      id: string;
-      transaction_id: string;
-      name: string;
-      description: string | null;
-      amount: number;
-      period: string;
-      user_id: string;
-      type: string;
-      total_amount: number;
-      installment: number;
-      total_installments: number;
-      created_at: string;
-      reference_date: string;
-      category_id?: string | null;
-      category_name?: string | null;
-      category_color?: string | null;
-    }>(`/v1/transactions/income/${id}`, payload);
-
-    return response.data;
-  },
-  async patchInstallment({
-    entry_id,
-    transaction_id,
-    payload,
-    scope,
-  }: {
-    entry_id: string;
-    transaction_id: string;
-    scope?: string;
-    payload: {
-      amount?: number;
-      description?: string;
-      category_id?: string;
-      name?: string;
-    };
-  }) {
-    const response = await client.patch<{
-      data: {
-        entries: {
           id: string;
-          transaction_id: string;
           name: string;
-          description: string | null;
-          amount: number;
-          period: string;
-          user_id: string;
           type: string;
-          total_amount: number;
-          installment: number;
-          total_installments: number;
-          created_at: string;
-          reference_date: string;
-          category_id?: string | null;
-          category_name?: string | null;
-          category_color?: string | null;
-        }[];
+          user_id: string;
+        };
       };
-    }>(
-      `/v1/transactions/installment/${transaction_id}/entry/${entry_id}${scope ? `?scope=${scope}` : ''}`,
-      payload,
-    );
+    }>(`/v1/transactions/${params.transactionId}`, {
+      update: getDefinedKeys(params.payload),
+      ...params.payload,
+    });
 
     return response.data;
   },

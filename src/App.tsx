@@ -17,6 +17,7 @@ import { NewTransactionPage } from './pages/wallet/NewTransactionPage';
 import { CategoriesPage } from './pages/categories/CategoriesPage';
 import * as PrimitiveTooltip from '@radix-ui/react-tooltip';
 import { DashboardPage } from './pages/dashboard/DashboardPage';
+import { DialogLoader } from './components/DialogLoader';
 
 declare module '@tanstack/react-query' {
   interface Register {
@@ -79,6 +80,7 @@ function App() {
             <Route path={ROUTES.CATEGORIES.LIST} element={<CategoriesPage />} />
           </Route>
         </Routes>
+        <DialogLoader />
         <ConfirmDialog />
       </PrimitiveTooltip.Provider>
     </QueryClientProvider>

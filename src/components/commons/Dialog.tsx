@@ -6,11 +6,9 @@ import { cn } from '../../utils/functions';
 export const Dialog = DialogPrimitive.Root;
 export const DialogTrigger = DialogPrimitive.Trigger;
 
-export const DialogContent: FC<ComponentProps<typeof DialogPrimitive.Content>> = ({
-  children,
-  className,
-  ...props
-}) => (
+export const DialogContent: FC<
+  ComponentProps<typeof DialogPrimitive.Content> & { isClosable?: boolean }
+> = ({ children, className, isClosable = true, ...props }) => (
   <DialogPrimitive.Portal>
     <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/10 backdrop-blur-xs" />
     <DialogPrimitive.Content
@@ -20,14 +18,16 @@ export const DialogContent: FC<ComponentProps<typeof DialogPrimitive.Content>> =
       )}
       {...props}
     >
-      <DialogClose
-        className="text-muted-foreground absolute top-2 right-3 cursor-pointer rounded-full p-1 transition-all hover:bg-zinc-100 hover:text-red-500"
-        asChild
-      >
-        <button>
-          <XIcon className="size-6" />
-        </button>
-      </DialogClose>
+      {isClosable && (
+        <DialogClose
+          className="text-muted-foreground absolute top-2 right-3 cursor-pointer rounded-full p-1 transition-all hover:bg-zinc-100 hover:text-red-500"
+          asChild
+        >
+          <button>
+            <XIcon className="size-6" />
+          </button>
+        </DialogClose>
+      )}
       {children}
     </DialogPrimitive.Content>
   </DialogPrimitive.Portal>

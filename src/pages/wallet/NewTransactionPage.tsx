@@ -1,17 +1,15 @@
 import { useState, type FC } from 'react';
 import { Page } from '../../components/commons/Page';
-import { usePostSimpleExpense } from '../../hooks/mutations/usePostSimpleExpense';
 import { useNavigate } from 'react-router';
 import { ROUTES } from '../../constants/routes';
 import { entriesKeys } from '../../queries/transactions-queries';
-import { usePostIncome } from '../../hooks/mutations/usePostIncome';
-import { usePostInstallment } from '../../hooks/mutations/usePostInstallment';
 import { Card } from '../../components/commons/Card';
 import { BanknoteArrowDownIcon, BanknoteArrowUpIcon, SquareDivideIcon } from 'lucide-react';
 import { parseUSD } from '../../utils/functions';
 import { SaveSimpleExpenseDialog } from './components/SaveSimpleExpenseDialog';
 import { SaveIncomeDialog } from './components/SaveIncomeDialog';
 import { SaveInstallmentDialog } from './components/SaveInstallmentDialog';
+import { usePostTransaction } from '../../hooks/mutations/usePostTransaction';
 
 export const NewTransactionPage: FC = () => {
   const [simpleExpenseIsVisible, setSimpleExpenseIsVisible] = useState(false);
@@ -19,36 +17,13 @@ export const NewTransactionPage: FC = () => {
   const [installmentIsVisible, setInstallmentIsVisible] = useState(false);
   const navigate = useNavigate();
 
-  const { mutate: postSimpleExpense, isPending: isPostSimpleExpensePending } = usePostSimpleExpense(
-    {
-      onSuccess: (data) => {
-        setSimpleExpenseIsVisible(false);
-        navigate(`${ROUTES.WALLET.LIST}?period=${data.data.entry.period}`);
-      },
-      meta: {
-        successNotification: 'Transaction created successfully',
-        errorNotification: 'There was an error creating the transaction',
-        invalidateQuery: [entriesKeys.all()],
-      },
-    },
-  );
-
-  const { mutate: postIncome, isPending: isPostIncomePending } = usePostIncome({
-    onSuccess: (data) => {
-      setSimpleExpenseIsVisible(false);
-      navigate(`${ROUTES.WALLET.LIST}?period=${data.data.entry.period}`);
-    },
-    meta: {
-      successNotification: 'Transaction created successfully',
-      errorNotification: 'There was an error creating the transaction',
-      invalidateQuery: [entriesKeys.all()],
-    },
-  });
-
-  const { mutate: postInstallment, isPending: isPostInstallmentPending } = usePostInstallment({
-    onSuccess: (data) => {
-      setSimpleExpenseIsVisible(false);
-      navigate(`${ROUTES.WALLET.LIST}?period=${data.data.entries[0].period}`);
+  const {
+    mutate: postTransaction,
+    isPending: isPostTransactionPending,
+    variables: postTransactionVariables,
+  } = usePostTransaction({
+    onSuccess: () => {
+      navigate(ROUTES.WALLET.LIST);
     },
     meta: {
       successNotification: 'Transaction created successfully',
@@ -72,16 +47,26 @@ export const NewTransactionPage: FC = () => {
             <SaveSimpleExpenseDialog
               isVisible={simpleExpenseIsVisible}
               onClose={() => setSimpleExpenseIsVisible(false)}
-              onSave={(data) => {
-                postSimpleExpense({
-                  amount: parseUSD(data.amount),
-                  name: data.name,
-                  reference_date: data.date,
-                  description: data.description,
-                  category_id: data.category?.id,
-                });
+              onSave={(data, { reset }) => {
+                postTransaction(
+                  {
+                    category_id: data.category?.id,
+                    entries: [{ amount: parseUSD(data.amount) * -1, reference_date: data.date }],
+                    name: data.name,
+                    note: data.description,
+                    type: 'simple_expense',
+                  },
+                  {
+                    onSuccess: () => {
+                      setSimpleExpenseIsVisible(false);
+                      reset();
+                    },
+                  },
+                );
               }}
-              isLoading={isPostSimpleExpensePending}
+              isLoading={
+                isPostTransactionPending && postTransactionVariables?.type === 'simple_expense'
+              }
             />
 
             <button
@@ -102,16 +87,24 @@ export const NewTransactionPage: FC = () => {
             <SaveIncomeDialog
               isVisible={incomeIsVisible}
               onClose={() => setIncomeIsVisible(false)}
-              onSave={(data) => {
-                postIncome({
-                  amount: parseUSD(data.amount),
-                  name: data.name,
-                  reference_date: data.date,
-                  description: data.description,
-                  category_id: data.category?.id,
-                });
+              onSave={(data, { reset }) => {
+                postTransaction(
+                  {
+                    category_id: data.category?.id,
+                    entries: [{ amount: parseUSD(data.amount), reference_date: data.date }],
+                    name: data.name,
+                    note: data.description,
+                    type: 'income',
+                  },
+                  {
+                    onSuccess: () => {
+                      setIncomeIsVisible(false);
+                      reset();
+                    },
+                  },
+                );
               }}
-              isLoading={isPostIncomePending}
+              isLoading={isPostTransactionPending && postTransactionVariables?.type === 'income'}
             />
             <button
               onClick={() => setIncomeIsVisible(true)}
@@ -131,17 +124,29 @@ export const NewTransactionPage: FC = () => {
             <SaveInstallmentDialog
               isVisible={installmentIsVisible}
               onClose={() => setInstallmentIsVisible(false)}
-              onSave={(data) => {
-                postInstallment({
-                  name: data.name,
-                  total_amount: parseUSD(data.amount),
-                  total_installments: Number(data.installments),
-                  reference_date: data.date,
-                  description: data.description,
-                  category_id: data.category?.id,
-                });
+              onSave={(data, { reset }) => {
+                postTransaction(
+                  {
+                    category_id: data.category?.id,
+                    entries: data.entries.map((entry) => ({
+                      amount: parseUSD(entry.amount) * -1,
+                      reference_date: entry.reference_date,
+                    })),
+                    name: data.name,
+                    note: data.note,
+                    type: 'installment',
+                  },
+                  {
+                    onSuccess: () => {
+                      setInstallmentIsVisible(false);
+                      reset();
+                    },
+                  },
+                );
               }}
-              isLoading={isPostInstallmentPending}
+              isLoading={
+                isPostTransactionPending && postTransactionVariables?.type === 'installment'
+              }
             />
             <button
               onClick={() => setInstallmentIsVisible(true)}
