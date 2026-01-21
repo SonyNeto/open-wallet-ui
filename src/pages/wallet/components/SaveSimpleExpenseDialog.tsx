@@ -107,7 +107,7 @@ export const SaveSimpleExpenseDialog: FCC<Props> = ({
 
           <div className="flex w-full gap-2">
             <DialogClose asChild>
-              <Button disabled={isLoading} className="w-full" variant="outlined">
+              <Button className="w-full" variant="outlined" disabled={isLoading}>
                 Cancel
               </Button>
             </DialogClose>
