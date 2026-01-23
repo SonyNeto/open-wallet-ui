@@ -1,8 +1,9 @@
 export const ROUTES = {
   HOME: '/',
   LOGIN: '/login',
-  WALLET: { LIST: '/wallet', NEW: '/wallet/new/transaction' },
+  WALLET: { INDEX: '/wallet', NEW_TRANSACTION: '/wallet/new/transaction' },
   CATEGORIES: {
-    LIST: '/categories',
+    INDEX: '/categories',
   },
+  DASHBOARD: '/dashboard',
 };

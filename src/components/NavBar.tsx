@@ -2,14 +2,7 @@ import { type FC } from 'react';
 import { useLocation, useNavigate } from 'react-router';
 import { ROUTES } from '../constants/routes';
 import { cn } from '../utils/functions';
-import {
-  ChevronDown,
-  HomeIcon,
-  LogOutIcon,
-  PanelLeftIcon,
-  TagsIcon,
-  WalletMinimalIcon,
-} from 'lucide-react';
+import { ChevronDown, LogOutIcon, PanelLeftIcon } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -21,6 +14,7 @@ import { useSession } from '../hooks/useSession';
 import { Zelda } from './commons/Zelda';
 import { Button } from './commons/Button';
 import { useCollapsed } from '../hooks/useCollapsed';
+import { MENU } from '../constants/menu';
 
 export const NavBar: FC = () => {
   const collapsed = useCollapsed((state) => state.isCollapsed);
@@ -33,8 +27,9 @@ export const NavBar: FC = () => {
   return (
     <aside
       className={cn(
-        'fixed left-0 flex h-screen flex-col items-center justify-between transition-all',
+        'fixed left-0 h-screen flex-col items-center justify-between transition-all',
         collapsed ? 'w-20' : 'w-56',
+        'hidden md:flex',
       )}
     >
       <div className="mt-4 flex w-full flex-col items-center gap-4 px-4">
@@ -55,45 +50,21 @@ export const NavBar: FC = () => {
           </Button>
         </div>
         <nav className="flex w-full flex-col gap-1 border-red-500">
-          <Zelda
-            to={ROUTES.HOME}
-            className={cn(
-              'flex h-12 items-center justify-center gap-3 rounded transition-colors hover:bg-zinc-200',
-              location.pathname === ROUTES.HOME && 'bg-zinc-200',
-              !collapsed && 'px-4',
-              !collapsed ? 'justify-start' : 'justify-center',
-            )}
-            keepQueryParams
-          >
-            <HomeIcon className="size-5 shrink-0" />
-            {!collapsed && 'Dashboard'}
-          </Zelda>
-          <Zelda
-            to={ROUTES.WALLET.LIST}
-            className={cn(
-              'flex h-12 items-center justify-center gap-3 rounded transition-colors hover:bg-zinc-200',
-              location.pathname.startsWith(ROUTES.WALLET.LIST) && 'bg-zinc-200',
-              !collapsed && 'px-4',
-              !collapsed ? 'justify-start' : 'justify-center',
-            )}
-            keepQueryParams
-          >
-            <WalletMinimalIcon className="size-5 shrink-0" />
-            {!collapsed && 'Wallet'}
-          </Zelda>
-          <Zelda
-            to={ROUTES.CATEGORIES.LIST}
-            className={cn(
-              'flex h-12 items-center justify-center gap-3 rounded transition-colors hover:bg-zinc-200',
-              location.pathname.startsWith(ROUTES.CATEGORIES.LIST) && 'bg-zinc-200',
-              !collapsed && 'px-4',
-              !collapsed ? 'justify-start' : 'justify-center',
-            )}
-            keepQueryParams
-          >
-            <TagsIcon className="size-5 shrink-0" />
-            {!collapsed && 'Categories'}
-          </Zelda>
+          {MENU.ITEMS.map((item) => (
+            <Zelda
+              to={item.route}
+              className={cn(
+                'flex h-12 items-center gap-3 rounded transition-colors hover:bg-zinc-200',
+                location.pathname.startsWith(item.route) && 'bg-zinc-200',
+                !collapsed && 'px-4',
+                !collapsed ? 'justify-start' : 'justify-center',
+              )}
+              keepQueryParams
+            >
+              <item.icon className="size-5 shrink-0" />
+              {!collapsed && item.label}
+            </Zelda>
+          ))}
         </nav>
       </div>
 

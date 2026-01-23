@@ -6,6 +6,7 @@ import { ROUTES } from '../constants/routes';
 import { ErrorBoundary } from './commons/ErrorBoundary';
 import { useCollapsed } from '../hooks/useCollapsed';
 import { cn } from '../utils/functions';
+import { TopBar } from './TopBar';
 
 export const Layout: FC = () => {
   const collapsed = useCollapsed((state) => state.isCollapsed);
@@ -23,8 +24,9 @@ export const Layout: FC = () => {
   }
 
   return (
-    <div className={cn('transition-all', collapsed ? 'pl-20' : 'pl-56')}>
+    <div className={cn('transition-all', collapsed ? 'md:pl-20' : 'md:pl-56', 'pt-14 md:pt-0')}>
       <NavBar />
+      <TopBar />
       <ErrorBoundary
         fallback={
           <div className="flex flex-col items-center justify-center gap-2 py-16">

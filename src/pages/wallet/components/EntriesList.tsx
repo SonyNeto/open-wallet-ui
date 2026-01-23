@@ -8,7 +8,13 @@ import { useDeleteTransaction } from '../../../hooks/mutations/useDeleteTransact
 import { Card } from '../../../components/commons/Card';
 import { cn, formatCurrency, parseUSD } from '../../../utils/functions';
 import { Button } from '../../../components/commons/Button';
-import { SquarePenIcon, TrashIcon } from 'lucide-react';
+import {
+  BanknoteArrowDownIcon,
+  BanknoteArrowUpIcon,
+  SquareDivideIcon,
+  SquarePenIcon,
+  TrashIcon,
+} from 'lucide-react';
 import { Link } from 'react-router';
 import { ROUTES } from '../../../constants/routes';
 import { usePeriod } from '../../../hooks/usePeriod';
@@ -126,171 +132,262 @@ export const EntriesList: FC = () => {
 
   const entries = Object.entries(data);
 
+  function getEntryData(
+    entry: Awaited<ReturnType<typeof TransactionsService.getEntries>>['data']['entries'][number],
+  ) {
+    return {
+      category() {
+        if (entry.category_id) {
+          return (
+            <Tooltip>
+              <TooltipTrigger>
+                <div
+                  className="size-4 shrink-0 rounded-full"
+                  style={{
+                    backgroundColor: entry.category_color ?? undefined,
+                  }}
+                />
+              </TooltipTrigger>
+              <TooltipContent side="left">
+                <p>{entry.category_name}</p>
+              </TooltipContent>
+            </Tooltip>
+          );
+        }
+      },
+      installment() {
+        return (
+          <>
+            {entry.installment}/{entry.total_installments}
+          </>
+        );
+      },
+      amount() {
+        return Intl.NumberFormat('en-US', {
+          style: 'currency',
+          currency: 'USD',
+        }).format(entry.amount);
+      },
+      actions() {
+        return (
+          <>
+            <Button
+              size="sm"
+              variant="outlined"
+              onClick={() => {
+                switch (entry.type) {
+                  case 'simple_expense': {
+                    const defaultValues = {
+                      name: entry.name,
+                      amount: formatCurrency(Math.abs(entry.amount)),
+                      description: entry.description || '',
+                      date: entry.reference_date.substring(0, 10),
+                      category: null,
+                    };
+                    if (entry.category_id) {
+                      Object.assign(defaultValues, {
+                        category: {
+                          id: entry.category_id,
+                          value: {
+                            id: entry.category_id,
+                            name: entry.category_name,
+                            color: entry.category_color,
+                          },
+                          label: entry.category_name,
+                        },
+                      });
+                    }
+                    setIsEditingExpense({
+                      id: entry.transaction_id,
+                      defaultValues,
+                    });
+                    break;
+                  }
+                  case 'income': {
+                    const defaultValues = {
+                      name: entry.name,
+                      amount: formatCurrency(Math.abs(entry.amount)),
+                      description: entry.description || '',
+                      date: entry.reference_date.substring(0, 10),
+                      category: null,
+                    };
+                    if (entry.category_id) {
+                      Object.assign(defaultValues, {
+                        category: {
+                          id: entry.category_id,
+                          value: {
+                            id: entry.category_id,
+                            name: entry.category_name,
+                            color: entry.category_color,
+                          },
+                          label: entry.category_name,
+                        },
+                      });
+                    }
+                    setIsEditingIncome({
+                      id: entry.transaction_id,
+                      defaultValues,
+                    });
+                    break;
+                  }
+                  case 'installment': {
+                    const defaultValues = {
+                      amount: formatCurrency(Math.abs(entry.total_amount)),
+                      name: entry.name,
+                      note: entry.description || '',
+                      installments: entry.total_installments.toString(),
+                      reference_date: entry.reference_date,
+                      category: null,
+                    };
+                    if (entry.category_id) {
+                      Object.assign(defaultValues, {
+                        category: {
+                          id: entry.category_id,
+                          value: {
+                            id: entry.category_id,
+                            name: entry.category_name,
+                            color: entry.category_color,
+                          },
+                          label: entry.category_name,
+                        },
+                      });
+                    }
+                    setIsEditingInstallment({
+                      transaction_id: entry.transaction_id,
+                      defaultValues,
+                    });
+                    break;
+                  }
+                  default:
+                    break;
+                }
+              }}
+            >
+              <SquarePenIcon className="size-4" />
+            </Button>
+            <Button
+              size="sm"
+              variant="outlined"
+              onClick={() =>
+                confirm.add(
+                  'Delete Transaction',
+                  'This action will delete this entry and all other entries related to it. Are you sure? This action cannot be undone.',
+                  () => deleteTransaction(entry.transaction_id),
+                )
+              }
+            >
+              <TrashIcon className="size-4" />
+            </Button>
+          </>
+        );
+      },
+      icon() {
+        switch (entry.type) {
+          case 'simple_expense':
+            return (
+              <div className="flex size-10 items-center justify-center rounded-full bg-red-100 text-red-500">
+                <BanknoteArrowDownIcon />
+              </div>
+            );
+          case 'income':
+            return (
+              <div className="flex size-10 items-center justify-center rounded-full bg-green-100 text-green-500">
+                <BanknoteArrowUpIcon />
+              </div>
+            );
+          case 'installment':
+            return (
+              <div className="flex size-10 items-center justify-center rounded-full bg-amber-100 text-amber-500">
+                <SquareDivideIcon className="size-5" />
+              </div>
+            );
+          default:
+            return null;
+        }
+      },
+    };
+  }
+
   return (
     <Card className="p-0" header={<h2 className="text-muted-foreground">Transactions</h2>}>
       {entries.length > 0 ? (
-        <table className="w-full">
-          <tbody>
-            {entries
-              .map(([date, entries]) => [
-                <tr key={date} className="bg-zinc-100">
-                  <td className="px-3 py-1 text-sm text-zinc-500" colSpan={5}>
-                    {dayjs(date, 'YYYY-MM-DD').format('DD of MMMM')}
-                  </td>
-                </tr>,
-                ...entries.map((entry) => (
-                  <tr key={entry.id}>
-                    <td className="w-[30%] px-3 py-1">
-                      <div className="flex items-center gap-2">
-                        {entry.category_color && (
-                          <Tooltip>
-                            <TooltipTrigger>
-                              <div
-                                className="size-4 shrink-0 rounded-full"
-                                style={{
-                                  backgroundColor: entry.category_color,
-                                }}
-                              />
-                            </TooltipTrigger>
-                            <TooltipContent side="left">
-                              <p>{entry.category_name}</p>
-                            </TooltipContent>
-                          </Tooltip>
-                        )}
-                        <p>{entry.name}</p>
-                      </div>
+        <>
+          <table className="hidden w-full md:table">
+            <tbody>
+              {entries
+                .map(([date, entries]) => [
+                  <tr key={date} className="bg-zinc-100">
+                    <td className="px-3 py-1 text-sm text-zinc-500" colSpan={5}>
+                      {dayjs(date, 'YYYY-MM-DD').format('DD of MMMM')}
                     </td>
-                    <td className="w-[20%] px-3 py-1">{entry.reference_date.slice(0, 10)}</td>
-                    <td className="w-[20%] px-3 py-1">
-                      {entry.installment}/{entry.total_installments}
-                    </td>
-                    <td
-                      className={cn(
-                        'w-[25%] px-3 py-1 text-right font-medium',
-                        entry.amount < 0 ? 'text-red-400' : 'text-green-500',
-                      )}
+                  </tr>,
+                  ...entries.map((entry) => {
+                    const data = getEntryData(entry);
+                    return (
+                      <tr key={entry.id}>
+                        <td className="w-[70%] px-3 py-1">
+                          <div className="flex items-center gap-2">
+                            {data.category()}
+                            <p>{entry.name}</p>
+                          </div>
+                        </td>
+                        <td className="w-[1%] px-3 py-1">{data.installment()}</td>
+                        <td
+                          className={cn(
+                            'w-[10%] px-3 py-1 text-right font-medium',
+                            entry.amount < 0 ? 'text-red-400' : 'text-green-500',
+                          )}
+                        >
+                          <span className="whitespace-nowrap">{data.amount()}</span>
+                        </td>
+                        <td className="w-[4%] px-3 py-1 text-right">
+                          <div className="flex items-center gap-2">{data.actions()}</div>
+                        </td>
+                      </tr>
+                    );
+                  }),
+                ])
+                .flat(Infinity)}
+            </tbody>
+          </table>
+          <div className="flex flex-col md:hidden">
+            {entries.map(([date, entries]) => (
+              <div key={date}>
+                <h3 className="px-3 py-1 font-medium">
+                  {dayjs(date, 'YYYY-MM-DD').format('DD of MMMM')}
+                </h3>
+                {entries.map((entry) => {
+                  const data = getEntryData(entry);
+                  return (
+                    <div
+                      key={entry.id}
+                      className="flex justify-between gap-2 border-b border-zinc-300 px-1 pt-1 pb-2"
                     >
-                      {Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(
-                        entry.amount,
-                      )}
-                    </td>
-                    <td className="w-[5%] px-3 py-1 text-right">
-                      <div className="flex items-center gap-2">
-                        <Button
-                          size="sm"
-                          variant="outlined"
-                          onClick={() => {
-                            switch (entry.type) {
-                              case 'simple_expense': {
-                                const defaultValues = {
-                                  name: entry.name,
-                                  amount: formatCurrency(Math.abs(entry.amount)),
-                                  description: entry.description || '',
-                                  date: entry.reference_date.substring(0, 10),
-                                  category: null,
-                                };
-                                if (entry.category_id) {
-                                  Object.assign(defaultValues, {
-                                    category: {
-                                      id: entry.category_id,
-                                      value: {
-                                        id: entry.category_id,
-                                        name: entry.category_name,
-                                        color: entry.category_color,
-                                      },
-                                      label: entry.category_name,
-                                    },
-                                  });
-                                }
-                                setIsEditingExpense({
-                                  id: entry.transaction_id,
-                                  defaultValues,
-                                });
-                                break;
-                              }
-                              case 'income': {
-                                const defaultValues = {
-                                  name: entry.name,
-                                  amount: formatCurrency(Math.abs(entry.amount)),
-                                  description: entry.description || '',
-                                  date: entry.reference_date.substring(0, 10),
-                                  category: null,
-                                };
-                                if (entry.category_id) {
-                                  Object.assign(defaultValues, {
-                                    category: {
-                                      id: entry.category_id,
-                                      value: {
-                                        id: entry.category_id,
-                                        name: entry.category_name,
-                                        color: entry.category_color,
-                                      },
-                                      label: entry.category_name,
-                                    },
-                                  });
-                                }
-                                setIsEditingIncome({
-                                  id: entry.transaction_id,
-                                  defaultValues,
-                                });
-                                break;
-                              }
-                              case 'installment': {
-                                const defaultValues = {
-                                  amount: formatCurrency(Math.abs(entry.total_amount)),
-                                  name: entry.name,
-                                  note: entry.description || '',
-                                  installments: entry.total_installments.toString(),
-                                  reference_date: entry.reference_date,
-                                  category: null,
-                                };
-                                if (entry.category_id) {
-                                  Object.assign(defaultValues, {
-                                    category: {
-                                      id: entry.category_id,
-                                      value: {
-                                        id: entry.category_id,
-                                        name: entry.category_name,
-                                        color: entry.category_color,
-                                      },
-                                      label: entry.category_name,
-                                    },
-                                  });
-                                }
-                                setIsEditingInstallment({
-                                  transaction_id: entry.transaction_id,
-                                  defaultValues,
-                                });
-                                break;
-                              }
-                              default:
-                                break;
-                            }
-                          }}
-                        >
-                          <SquarePenIcon className="size-4" />
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outlined"
-                          onClick={() =>
-                            confirm.add(
-                              'Delete Transaction',
-                              'This action will delete this entry and all other entries related to it. Are you sure? This action cannot be undone.',
-                              () => deleteTransaction(entry.transaction_id),
-                            )
-                          }
-                        >
-                          <TrashIcon className="size-4" />
-                        </Button>
+                      <div className="flex min-w-0 flex-1 items-center gap-2">
+                        {data.icon()}
+                        <div className="flex min-w-0 flex-1 items-center gap-2">
+                          {data.category()}
+                          <p className="truncate font-medium">{entry.name}</p>
+                        </div>
                       </div>
-                    </td>
-                  </tr>
-                )),
-              ])
-              .flat(Infinity)}
-          </tbody>
-        </table>
+                      <div className="flex flex-col items-end gap-2 font-medium">
+                        <span
+                          className={cn(
+                            'whitespace-nowrap',
+                            entry.amount < 0 ? 'text-red-400' : 'text-green-500',
+                          )}
+                        >
+                          {data.amount()}
+                        </span>
+                        <div className="flex items-center gap-1">{data.actions()}</div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ))}
+          </div>
+        </>
       ) : (
         <div className="flex flex-col items-center justify-center pb-8">
           <img src="/empty_state_wallet.webp" alt="no results found" className="size-28" />
@@ -299,7 +396,7 @@ export const EntriesList: FC = () => {
           <span>Try adding one</span>
 
           <Button className="mt-3" variant="outlined" asChild>
-            <Link to={{ pathname: ROUTES.WALLET.NEW }}>Add Transaction</Link>
+            <Link to={{ pathname: ROUTES.WALLET.NEW_TRANSACTION }}>Add Transaction</Link>
           </Button>
         </div>
       )}
