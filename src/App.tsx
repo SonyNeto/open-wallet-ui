@@ -73,11 +73,11 @@ function App() {
         <Routes>
           <Route path={ROUTES.LOGIN} element={<LoginPage />} />
           <Route element={<Layout />}>
-            <Route path={ROUTES.HOME} element={<DashboardPage />} />
-            <Route path={ROUTES.WALLET.LIST} element={<WalletPage />} />
-            <Route path={ROUTES.WALLET.NEW} element={<NewTransactionPage />} />
+            <Route path={ROUTES.DASHBOARD} element={<DashboardPage />} />
+            <Route path={ROUTES.WALLET.INDEX} element={<WalletPage />} />
+            <Route path={ROUTES.WALLET.NEW_TRANSACTION} element={<NewTransactionPage />} />
             <Route path={ROUTES.HOME} element={<WalletPage />} />
-            <Route path={ROUTES.CATEGORIES.LIST} element={<CategoriesPage />} />
+            <Route path={ROUTES.CATEGORIES.INDEX} element={<CategoriesPage />} />
           </Route>
         </Routes>
         <DialogLoader />

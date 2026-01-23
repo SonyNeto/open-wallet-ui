@@ -51,15 +51,15 @@ export const CategoriesList = () => {
         {categoriesData.data.categories.length > 0 ? (
           categoriesData.data.categories.map((category) => (
             <div className="flex w-full justify-between" key={`category-${category.id}`}>
-              <div className="flex items-center gap-2">
+              <div className="flex min-w-0 flex-1 items-center gap-2">
                 <div
-                  className="size-5 rounded-full shadow-sm"
+                  className="size-5 shrink-0 rounded-full shadow-sm"
                   style={{ backgroundColor: category.color }}
                 />
-                <p>{category.name}</p>
+                <p className="truncate">{category.name}</p>
               </div>
 
-              <div className="flex items-center gap-2">
+              <div className="flex shrink-0 items-center gap-2">
                 <Button
                   size="sm"
                   variant="outlined"

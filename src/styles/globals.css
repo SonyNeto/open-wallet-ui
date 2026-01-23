@@ -13,6 +13,24 @@
   }
 }
 
+@keyframes drawer-in {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes drawer-out {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-100%);
+  }
+}
+
 @theme {
   --font-text: 'Rubik', 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   --color-primary: var(--color-primary);
@@ -23,6 +41,8 @@
   --skeleton: 220 15% 18%;
   --skeleton-highlight: 220 15% 25%;
   --spacing-rx-dp-trigger: var(--rx-dp-trigger);
+  --animate-drawer-in: drawer-in 0.1s ease-out;
+  --animate-drawer-out: drawer-out 0.1s ease-in;
 }
 
 body {

@@ -23,7 +23,7 @@ export const NewTransactionPage: FC = () => {
     variables: postTransactionVariables,
   } = usePostTransaction({
     onSuccess: () => {
-      navigate(ROUTES.WALLET.LIST);
+      navigate(ROUTES.WALLET.INDEX);
     },
     meta: {
       successNotification: 'Transaction created successfully',
@@ -43,7 +43,7 @@ export const NewTransactionPage: FC = () => {
           header={<h2 className="text-muted-foreground">Choose the type of transaction</h2>}
           className="flex items-center justify-center"
         >
-          <div className="grid grid-cols-3 gap-4">
+          <div className="flex flex-col gap-4 md:grid md:grid-cols-3">
             <SaveSimpleExpenseDialog
               isVisible={simpleExpenseIsVisible}
               onClose={() => setSimpleExpenseIsVisible(false)}

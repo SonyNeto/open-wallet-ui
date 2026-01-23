@@ -16,10 +16,10 @@ export const WalletPage: FC = () => {
   return (
     <Page>
       <main className="p-2">
-        <header className="mb-4 flex w-full items-center justify-between">
+        <header className="mb-4 flex w-full flex-col items-start justify-between md:flex-row md:items-center">
           <h1 className="text-xl font-medium">Wallet</h1>
 
-          <div className="flex items-center gap-2">
+          <div className="flex w-full justify-between gap-2 md:w-auto md:justify-start">
             <PeriodPickerCustom value={period} onChange={setPeriod} align="center">
               <Button variant="outlined" className="font-normal">
                 {`${MONTHS_FULL[period.month]} ${period.year}`}
@@ -27,7 +27,7 @@ export const WalletPage: FC = () => {
             </PeriodPickerCustom>
 
             <Button asChild>
-              <Zelda to={ROUTES.WALLET.NEW} keepQueryParams>
+              <Zelda to={ROUTES.WALLET.NEW_TRANSACTION} keepQueryParams>
                 Add Transaction
               </Zelda>
             </Button>

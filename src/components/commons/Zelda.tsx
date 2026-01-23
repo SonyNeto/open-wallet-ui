@@ -6,9 +6,10 @@ interface Props {
   keepQueryParams?: boolean;
   className?: string;
   children?: ReactNode;
+  onClick?: () => void;
 }
 
-export const Zelda: FC<Props> = ({ to, keepQueryParams = false, className, children }) => {
+export const Zelda: FC<Props> = ({ to, onClick, keepQueryParams = false, className, children }) => {
   const [searchParams] = useSearchParams();
 
   const newSearchParams = new URLSearchParams(searchParams);
@@ -20,7 +21,7 @@ export const Zelda: FC<Props> = ({ to, keepQueryParams = false, className, child
   }
 
   return (
-    <PrimitiveLink to={targetURL} className={className}>
+    <PrimitiveLink onClick={onClick} to={targetURL} className={className}>
       {children}
     </PrimitiveLink>
   );
