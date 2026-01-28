@@ -361,14 +361,11 @@ export const EntriesList: FC = () => {
                   return (
                     <div
                       key={entry.id}
-                      className="flex justify-between gap-2 border-b border-zinc-300 px-1 pt-1 pb-2"
+                      className="flex justify-between gap-2 border-b border-zinc-300 px-3 pt-1 pb-2"
                     >
                       <div className="flex min-w-0 flex-1 items-center gap-2">
-                        {data.icon()}
-                        <div className="flex min-w-0 flex-1 items-center gap-2">
-                          {data.category()}
-                          <p className="truncate font-medium">{entry.name}</p>
-                        </div>
+                        {data.category()}
+                        <p className="truncate font-medium">{entry.name}</p>
                       </div>
                       <div className="flex flex-col items-end gap-2 font-medium">
                         <span
