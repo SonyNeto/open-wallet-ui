@@ -8,13 +8,7 @@ import { useDeleteTransaction } from '../../../hooks/mutations/useDeleteTransact
 import { Card } from '../../../components/commons/Card';
 import { cn, formatCurrency, parseUSD } from '../../../utils/functions';
 import { Button } from '../../../components/commons/Button';
-import {
-  BanknoteArrowDownIcon,
-  BanknoteArrowUpIcon,
-  SquareDivideIcon,
-  SquarePenIcon,
-  TrashIcon,
-} from 'lucide-react';
+import { SquarePenIcon, TrashIcon } from 'lucide-react';
 import { Link } from 'react-router';
 import { ROUTES } from '../../../constants/routes';
 import { usePeriod } from '../../../hooks/usePeriod';
@@ -280,30 +274,6 @@ export const EntriesList: FC = () => {
             </Button>
           </>
         );
-      },
-      icon() {
-        switch (entry.type) {
-          case 'simple_expense':
-            return (
-              <div className="flex size-10 items-center justify-center rounded-full bg-red-100 text-red-500">
-                <BanknoteArrowDownIcon />
-              </div>
-            );
-          case 'income':
-            return (
-              <div className="flex size-10 items-center justify-center rounded-full bg-green-100 text-green-500">
-                <BanknoteArrowUpIcon />
-              </div>
-            );
-          case 'installment':
-            return (
-              <div className="flex size-10 items-center justify-center rounded-full bg-amber-100 text-amber-500">
-                <SquareDivideIcon className="size-5" />
-              </div>
-            );
-          default:
-            return null;
-        }
       },
     };
   }
