@@ -185,11 +185,13 @@ export const EntriesList: FC = () => {
         }
       },
       installment() {
-        return (
-          <>
-            {entry.installment}/{entry.total_installments}
-          </>
-        );
+        if (entry.total_installments > 1) {
+          return (
+            <span className="text-sm font-bold">
+              ({entry.installment}/{entry.total_installments})
+            </span>
+          );
+        }
       },
       amount() {
         return Intl.NumberFormat('en-US', {
@@ -334,10 +336,11 @@ export const EntriesList: FC = () => {
                           <td className="w-[70%] px-3 py-1">
                             <div className="flex items-center gap-2">
                               {data.category()}
-                              <p>{entry.name}</p>
+                              <p>
+                                {entry.name} {data.installment()}
+                              </p>
                             </div>
                           </td>
-                          <td className="w-[1%] px-3 py-1">{data.installment()}</td>
                           <td
                             className={cn(
                               'w-[10%] px-3 py-1 text-right font-medium',
