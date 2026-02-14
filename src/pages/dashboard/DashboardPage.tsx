@@ -1,6 +1,6 @@
 import { Suspense, type FC } from 'react';
 import { Page } from '../../components/commons/Page';
-import { Graphs } from './components/Graphs';
+import { Insights } from './components/Insights';
 import { PeriodPickerCustom } from '../../components/commons/PeriodPickerCustom';
 import { Button } from '../../components/commons/Button';
 import { MONTHS_FULL } from '../../constants/dates';
@@ -32,7 +32,7 @@ export const DashboardPage: FC = () => {
             </div>
           }
         >
-          <Graphs />
+          <Insights />
         </Suspense>
       </main>
     </Page>

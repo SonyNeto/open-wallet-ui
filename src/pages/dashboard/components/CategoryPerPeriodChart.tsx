@@ -4,7 +4,6 @@ import { useSuspenseQuery } from '@tanstack/react-query';
 import { getCategoriesPerPeriodQueryOpts } from '../../../queries/categories-queries';
 import { usePeriod } from '../../../hooks/usePeriod';
 import dayjs from 'dayjs';
-import { createFilter } from '../../../utils/filter';
 
 export const CategoryPerPeriod: FC = () => {
   const { period } = usePeriod();
@@ -13,10 +12,13 @@ export const CategoryPerPeriod: FC = () => {
     ...getCategoriesPerPeriodQueryOpts(
       dayjs().month(period.month).year(period.year).format('YYYYMM'),
       {
-        filter: createFilter().and('total_amount', 'lt', 0).toURL(),
+        per_page: 100,
+        order_by: 'total_amount:desc',
       },
     ),
   });
+
+  const filteredData = data.data.categories.filter((item) => item.total_amount < 0);
 
   const option = {
     tooltip: {
@@ -62,7 +64,7 @@ export const CategoryPerPeriod: FC = () => {
         labelLine: {
           show: false,
         },
-        data: data.data.categories.map((category) => ({
+        data: filteredData.map((category) => ({
           value: Math.abs(category.total_amount),
           name: category.name,
           itemStyle: {
@@ -79,9 +81,9 @@ export const CategoryPerPeriod: FC = () => {
     ],
   };
 
-  if (data.data.categories.length === 0) {
+  if (filteredData.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center">
+      <div className="flex flex-col items-center justify-center text-center">
         <img src="/empty_state_donut.webp" alt="" className="size-24" />
         <span className="text-lg font-medium">No transactions with categories yet</span>
         <span>Categorize your transactions to check some insights</span>
